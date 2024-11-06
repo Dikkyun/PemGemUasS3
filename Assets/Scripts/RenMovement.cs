@@ -10,6 +10,10 @@ public class RenMovement : MonoBehaviour
     [SerializeField] private float rollForce = 6f;
     [SerializeField] private bool noBlood = false;
     [SerializeField] private bool canMove = true;
+    private bool canBlock = true;
+    private bool isBlocking = false;
+    private bool canAttack = true;
+    private float originalSpeed;
     //[SerializeField] private GameObject slideDust;
 
     [Header("Dash Variable")]
@@ -44,6 +48,8 @@ public class RenMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        originalSpeed = speed;
+
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -89,7 +95,7 @@ public class RenMovement : MonoBehaviour
         //Dash
         //horizontalDirection =
 
-        if(Input.GetKeyDown(KeyCode.E))
+        if(Input.GetKeyDown(KeyCode.Z) && !isBlocking)
         {
             dashBufferCounter = dashBufferLength;
         }
@@ -109,7 +115,7 @@ public class RenMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (canDash)
+        if (canDash && !isBlocking)
         {
             StartCoroutine(Dash(horizontalDirection, verticalDirection));
         }
@@ -146,18 +152,17 @@ public class RenMovement : MonoBehaviour
         }
 
         //Handle other actions
-        if(Input.GetKeyDown(KeyCode.Space) && grounded && !rolling)
+        if(Input.GetKeyDown(KeyCode.C) && grounded && !rolling && !isDashing)
         {
             Jump();
         }
 
-        if(Input.GetMouseButtonDown(0) && timeSinceAttack > 0.25f && !rolling)
+        if(Input.GetKeyDown(KeyCode.X) && timeSinceAttack > 0.25f && !rolling && canAttack)
         {
             Attack();
         }
-        if(Input.GetMouseButtonDown(1) && !rolling)
+        if(Input.GetMouseButtonDown(1) && !rolling && canBlock)
         {
-            
             canMove = false;
             Block();
             
@@ -166,6 +171,7 @@ public class RenMovement : MonoBehaviour
         {
             animator.SetBool("IdleBlock", false);
             canMove = true;
+            isBlocking = false;
         }
         if(Input.GetKeyDown(KeyCode.LeftShift) && !rolling && !isWallSliding)
         {
@@ -187,6 +193,7 @@ public class RenMovement : MonoBehaviour
 
     private void Attack()
     {
+
         currentAttack = (timeSinceAttack > 1) ? 1 : currentAttack + 1;
         if(currentAttack > 3)
         {
@@ -195,12 +202,23 @@ public class RenMovement : MonoBehaviour
 
         animator.SetTrigger("Attack" + currentAttack);
         timeSinceAttack = 0;
+        speed = originalSpeed / 2;
+
+        Invoke(nameof(ResetMoveSpeed), 0.3f);
+
+    }
+
+    private void ResetMoveSpeed()
+    {
+        speed = originalSpeed;
     }
 
     private void Block()
     {
+        isBlocking = true;
         animator.SetTrigger("Block");
         animator.SetBool("IdleBlock", true);
+        canMove = false;
     }
 
     private void Roll()
@@ -256,6 +274,8 @@ public class RenMovement : MonoBehaviour
         hasDashed = true;
         dashCooldownTimer = dashCooldown;
         isDashing = true;
+        canBlock = false;
+        canAttack = false;
         //rolling = false;
 
         rb.velocity = Vector2.zero;
@@ -277,5 +297,7 @@ public class RenMovement : MonoBehaviour
 
         rb.gravityScale = 1f;
         isDashing = false;
+        canBlock = true;
+        canAttack = true;
     }
 }
