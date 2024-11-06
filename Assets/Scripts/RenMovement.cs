@@ -12,6 +12,17 @@ public class RenMovement : MonoBehaviour
     [SerializeField] private bool canMove = true;
     //[SerializeField] private GameObject slideDust;
 
+    [Header("Dash Variable")]
+    [SerializeField] private float dashSpeed = 15f;
+    [SerializeField] private float dashLength = 0.3f;
+    [SerializeField] private float dashBufferLength = 0.1f;
+    [SerializeField] private float dashCooldown = 1f;
+    private float dashBufferCounter;
+    private bool isDashing;
+    private bool hasDashed;
+    private bool canDash => dashBufferCounter > 0f && !hasDashed;
+    private float dashCooldownTimer;
+
     private Animator animator;
     private Rigidbody2D rb;
     private Sensor_Ren groundSensor;
@@ -26,6 +37,9 @@ public class RenMovement : MonoBehaviour
     private float timeSinceAttack = 0.0f;
     private float delayToIdle = 0.05f;
     private readonly float rollDuration = 8.0f / 14.0f;
+    //Dash
+    private float horizontalDirection;
+    private float verticalDirection;
 
     // Start is called before the first frame update
     void Start()
@@ -71,6 +85,34 @@ public class RenMovement : MonoBehaviour
         //handle input and Movement
         HandleInput();
         HandleAnimations();
+
+        //Dash
+        //horizontalDirection =
+
+        if(Input.GetKeyDown(KeyCode.E))
+        {
+            dashBufferCounter = dashBufferLength;
+        }
+        else
+        {
+            dashBufferCounter -= Time.deltaTime;
+        }
+        if (hasDashed)
+        {
+            dashCooldownTimer -= Time.deltaTime;
+            if (dashCooldownTimer < 0)
+            {
+                hasDashed = false;
+            }
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        if (canDash)
+        {
+            StartCoroutine(Dash(horizontalDirection, verticalDirection));
+        }
     }
 
     private void UpdateGroundedStatus()
@@ -201,5 +243,39 @@ public class RenMovement : MonoBehaviour
     {
         return (wallSensorL1.State() && wallSensorL2.State() || 
             wallSensorR1.State() && wallSensorR2.State());
+    }
+
+    //Dash
+    private Vector2 GetInput()
+    {
+        return new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+    }
+    IEnumerator Dash(float x, float y)
+    {
+        float dashStartTime = Time.time;
+        hasDashed = true;
+        dashCooldownTimer = dashCooldown;
+        isDashing = true;
+        //rolling = false;
+
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 0f;
+        rb.drag = 0f;
+
+        Vector2 dir;
+        if (x != 0f || y != 0f) dir = new Vector2(x, y);
+        else
+        {
+            dir = facingDirection >= 0 ? Vector2.right : Vector2.left;
+        }
+
+        while (Time.time < dashStartTime + dashLength)
+        {
+            rb.velocity = dir.normalized * dashSpeed;
+            yield return null;
+        }
+
+        rb.gravityScale = 1f;
+        isDashing = false;
     }
 }
