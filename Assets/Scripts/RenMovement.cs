@@ -13,8 +13,18 @@ public class RenMovement : MonoBehaviour
     private bool canBlock = true;
     private bool isBlocking = false;
     private bool canAttack = true;
+    private bool canJump=true;
     private float originalSpeed;
     //[SerializeField] private GameObject slideDust;
+
+    [Header("Attack")]
+    [SerializeField] Vector2 attackPointOffset;
+    [SerializeField] Vector2 firePointOffset;
+    public Transform attackPoint;
+    public Transform firePoint;
+    public float attackRange = 0.5f;
+    public LayerMask enemyLayers;
+    [SerializeField] private float damage;
 
     [Header("Dash Variable")]
     [SerializeField] private float dashSpeed = 15f;
@@ -24,6 +34,7 @@ public class RenMovement : MonoBehaviour
     private float dashBufferCounter;
     private bool isDashing;
     private bool hasDashed;
+    private bool canDashes= true;
     private bool canDash => dashBufferCounter > 0f && !hasDashed;
     private float dashCooldownTimer;
 
@@ -32,6 +43,7 @@ public class RenMovement : MonoBehaviour
     private Sensor_Ren groundSensor;
     private Sensor_Ren wallSensorR1, wallSensorR2, wallSensorL1, wallSensorL2;
     private SpriteRenderer spriteRenderer;
+    private Magic magic;
 
     private bool isWallSliding = false;
     private bool grounded = false;
@@ -53,6 +65,10 @@ public class RenMovement : MonoBehaviour
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        magic = GetComponent<Magic>();
+
+        attackPointOffset = attackPoint.localPosition;
+        firePointOffset = firePoint.localPosition;
 
         groundSensor = transform.Find("GroundSensor")?.GetComponent<Sensor_Ren>();
         wallSensorR1 = transform.Find("WallSensor_R1")?.GetComponent<Sensor_Ren>();
@@ -95,7 +111,7 @@ public class RenMovement : MonoBehaviour
         //Dash
         //horizontalDirection =
 
-        if(Input.GetKeyDown(KeyCode.Z) && !isBlocking)
+        if(Input.GetKeyDown(KeyCode.Z) && !isBlocking && canDashes)
         {
             dashBufferCounter = dashBufferLength;
         }
@@ -111,6 +127,8 @@ public class RenMovement : MonoBehaviour
                 hasDashed = false;
             }
         }
+
+        UpdateAttackPointPosition();
     }
 
     private void FixedUpdate()
@@ -142,6 +160,7 @@ public class RenMovement : MonoBehaviour
         if(inputX != 0 && canMove)
         {
             facingDirection = (int)Mathf.Sign(inputX);
+            
             spriteRenderer.flipX = facingDirection == -1;
         }
 
@@ -152,7 +171,7 @@ public class RenMovement : MonoBehaviour
         }
 
         //Handle other actions
-        if(Input.GetKeyDown(KeyCode.C) && grounded && !rolling && !isDashing)
+        if(Input.GetKeyDown(KeyCode.C) && grounded && !rolling && !isDashing && canJump)
         {
             Jump();
         }
@@ -161,17 +180,19 @@ public class RenMovement : MonoBehaviour
         {
             Attack();
         }
-        if(Input.GetMouseButtonDown(1) && !rolling && canBlock)
+        if(Input.GetKeyDown(KeyCode.S) && !rolling && canBlock)
         {
             canMove = false;
             Block();
             
         }
-        if (Input.GetMouseButtonUp(1))
+        if (Input.GetKeyUp(KeyCode.S) && canBlock)
         {
             animator.SetBool("IdleBlock", false);
             canMove = true;
+            canJump = true;
             isBlocking = false;
+            GetComponent<HealthBarRen>().isInvulnerable = false;
         }
         if(Input.GetKeyDown(KeyCode.LeftShift) && !rolling && !isWallSliding)
         {
@@ -199,13 +220,55 @@ public class RenMovement : MonoBehaviour
         {
             currentAttack = 1;
         }
-
+        
         animator.SetTrigger("Attack" + currentAttack);
+        AttackDamage();
         timeSinceAttack = 0;
         speed = originalSpeed / 2;
 
         Invoke(nameof(ResetMoveSpeed), 0.3f);
 
+    }
+
+    public void AttackDamage()
+    {
+        Collider2D[] hitEnemey = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayers);
+        
+        foreach(Collider2D enemy in hitEnemey)
+        {
+            if (enemy.CompareTag("Enemy"))
+            {
+                enemy.GetComponent<EnemyHealth>().TakeDamage(damage);
+            }
+            else
+            {
+                enemy.GetComponent<BossHealth>().TakeDamage(damage);
+            }
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if(attackPoint == null)
+        {
+            return;
+        }
+
+        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+
+    private void UpdateAttackPointPosition()
+    {
+        attackPoint.localPosition = new Vector2(facingDirection* Mathf.Abs(attackPointOffset.x), attackPointOffset.y);
+
+        attackPoint.localRotation = Quaternion.Euler(0, facingDirection == -1 ? 180 : 0, 0);
+
+        firePoint.localPosition = new Vector2(facingDirection * Mathf.Abs(firePointOffset.x), firePointOffset.y);
+
+        firePoint.localRotation = Quaternion.Euler(0, facingDirection == -1 ? 180 : 0, 0);
+        //Vector3 attackPointScale = attackPoint.localScale;
+        //attackPointScale.x = facingDirection == 1 ? Mathf.Abs(attackPointScale.x) : -Mathf.Abs(attackPointScale.x);
+        //attackPoint.localScale = attackPointScale;
     }
 
     private void ResetMoveSpeed()
@@ -216,9 +279,11 @@ public class RenMovement : MonoBehaviour
     private void Block()
     {
         isBlocking = true;
+        GetComponent<HealthBarRen>().isInvulnerable = true;
         animator.SetTrigger("Block");
         animator.SetBool("IdleBlock", true);
         canMove = false;
+        canJump = false;
     }
 
     private void Roll()
@@ -232,6 +297,16 @@ public class RenMovement : MonoBehaviour
     private void EndRoll()
     {
         rolling = false;
+    }
+
+    public void CanMove(bool move)
+    {
+        canMove = move;
+        canBlock = move;
+        canJump = move;
+        canAttack = move;
+        canDashes = move;
+        magic.canShoot = move;
     }
 
     private void HandleAnimations()
@@ -271,6 +346,7 @@ public class RenMovement : MonoBehaviour
     IEnumerator Dash(float x, float y)
     {
         float dashStartTime = Time.time;
+        GetComponent<Collider2D>().enabled = false;
         hasDashed = true;
         dashCooldownTimer = dashCooldown;
         isDashing = true;
@@ -299,5 +375,6 @@ public class RenMovement : MonoBehaviour
         isDashing = false;
         canBlock = true;
         canAttack = true;
+        GetComponent<Collider2D>().enabled = true;
     }
 }
