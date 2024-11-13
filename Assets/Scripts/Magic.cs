@@ -9,22 +9,29 @@ public class Magic : MonoBehaviour
     public float cooldown = 1.5f;
     public bool canShoot = true;
 
+    HealthBarRen healthBarRen;
+
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        healthBarRen = GetComponent<HealthBarRen>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.D) && canShoot)
+        if (Input.GetKeyDown(KeyCode.D) && canShoot && healthBarRen.currentMana >= 20)
         {
+            healthBarRen.UpdateMana(-20);
             StartCoroutine(ShootCooldown());
         }else if (Input.GetKeyDown(KeyCode.D) && !canShoot)
         {
             Debug.Log("Magic Cooldown");
+        }
+        else if (Input.GetKeyDown(KeyCode.D) && canShoot && healthBarRen.currentMana <= 0)
+        {
+            Debug.Log("NO Mana");
         }
     }
 

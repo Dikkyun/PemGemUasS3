@@ -44,6 +44,7 @@ public class RenMovement : MonoBehaviour
     private Sensor_Ren wallSensorR1, wallSensorR2, wallSensorL1, wallSensorL2;
     private SpriteRenderer spriteRenderer;
     private Magic magic;
+    private HealthBarRen healthBar;
 
     private bool isWallSliding = false;
     private bool grounded = false;
@@ -66,6 +67,7 @@ public class RenMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         magic = GetComponent<Magic>();
+        healthBar = GetComponent<HealthBarRen>();
 
         attackPointOffset = attackPoint.localPosition;
         firePointOffset = firePoint.localPosition;
@@ -321,7 +323,7 @@ public class RenMovement : MonoBehaviour
             delayToIdle = 0.05f;
             animator.SetInteger("AnimState", 1);
         }
-        else if(delayToIdle > 0)
+        else if(delayToIdle > 0 || healthBar.respawn == true)
         {
             delayToIdle -= Time.deltaTime;
             if(delayToIdle <= 0)
