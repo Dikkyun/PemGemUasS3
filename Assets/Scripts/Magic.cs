@@ -21,15 +21,15 @@ public class Magic : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.D) && canShoot && healthBarRen.currentMana >= 20)
+        if (Input.GetKeyDown(KeyCode.A) && canShoot && healthBarRen.currentMana >= 20)
         {
             healthBarRen.UpdateMana(-20);
             StartCoroutine(ShootCooldown());
-        }else if (Input.GetKeyDown(KeyCode.D) && !canShoot)
+        }else if (Input.GetKeyDown(KeyCode.A) && !canShoot)
         {
             Debug.Log("Magic Cooldown");
         }
-        else if (Input.GetKeyDown(KeyCode.D) && canShoot && healthBarRen.currentMana <= 0)
+        else if (Input.GetKeyDown(KeyCode.A) && canShoot && healthBarRen.currentMana <= 0)
         {
             Debug.Log("NO Mana");
         }

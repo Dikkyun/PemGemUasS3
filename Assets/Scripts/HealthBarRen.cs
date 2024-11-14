@@ -56,6 +56,7 @@ public class HealthBarRen : MonoBehaviour
         
     }
 
+    //TakeDamage
     public void UpdateHealth(float amount)
     {
         if (isInvulnerable)
@@ -87,6 +88,33 @@ public class HealthBarRen : MonoBehaviour
         }
     }
 
+    //Heal
+    public void UpdateHeal(float amount)
+    {
+        if (isInvulnerable)
+        {
+            return;
+        }
+
+        DataPersonalRen.currentHealthRen += amount;
+        DataPersonalRen.currentHealthRen = Mathf.Clamp(DataPersonalRen.currentHealthRen, 0, DataPersonalRen.maxHealthRen);
+
+        healthText.text = "Health: " + DataPersonalRen.currentHealthRen;
+        UpdateHealBar();
+
+        // Save updated health to PlayerPrefs
+        DataPersonalRen.SaveHealth();
+    }
+
+    private void UpdateHealBar()
+    {
+        float targetFillAmount = DataPersonalRen.currentHealthRen / maxHealth;
+        healthBarFill.DOFillAmount(targetFillAmount, fillSpeed);
+        healthBarFill.DOColor(colorGradientHp.Evaluate(targetFillAmount), fillSpeed);
+
+    }
+
+    //Mana
     public void UpdateMana(float amount)
     {
         currentMana += amount;

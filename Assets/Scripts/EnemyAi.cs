@@ -13,18 +13,22 @@ public class EnemyAi : MonoBehaviour
 
     public Transform EnemyGFX;
 
+    public float damage = 10f;
+
     Path path;
     int currentWaypoint = 0;
     bool reachedEndOfPath = false;
 
     Seeker seeker;
     Rigidbody2D rb;
+    HealthBarRen healthBarRen;
 
     // Start is called before the first frame update
     void Start()
     {
         seeker = GetComponent<Seeker>();
         rb = GetComponent<Rigidbody2D>();
+        healthBarRen = GameObject.FindGameObjectWithTag("Player").GetComponent<HealthBarRen>();
         target = GameObject.FindGameObjectWithTag("Player").transform;
 
         InvokeRepeating("UpdatePath", 0f, 0.5f);
@@ -94,4 +98,14 @@ public class EnemyAi : MonoBehaviour
             currentWaypoint = 0;
         }
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Player"))
+        {
+            healthBarRen.UpdateHealth(damage);
+        }
+    }
+
+    
 }
