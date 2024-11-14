@@ -328,7 +328,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Creadit
+  m_text: Credits
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 929ba72b7e4abe245b6e2f655b0159c2, type: 2}
   m_sharedMaterial: {fileID: 4645343036847738018, guid: 929ba72b7e4abe245b6e2f655b0159c2, type: 2}
@@ -888,7 +888,7 @@ GameObject:
   - component: {fileID: 609498189}
   - component: {fileID: 609498188}
   m_Layer: 5
-  m_Name: Creadit_Btn
+  m_Name: Credit_Btn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3025,7 +3025,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Creadit
+  m_text: Credits
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 929ba72b7e4abe245b6e2f655b0159c2, type: 2}
   m_sharedMaterial: {fileID: 4645343036847738018, guid: 929ba72b7e4abe245b6e2f655b0159c2, type: 2}

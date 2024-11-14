@@ -183,6 +183,12 @@ public class HealthBarRen : MonoBehaviour
 
     public void SceneLoadMenu(string SceneName)
     {
+        GetComponent<RenMovement>().CanMove(true);
+        DieUI.gameObject.SetActive(false);
+        isInvulnerable = false;
+        DataPersonalRen.currentHealthRen = DataPersonalRen.maxHealthRen;
+        DataPersonalRen.SaveHealth();
+        DataPersonalRen.LoadHealth();
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneName);
     }

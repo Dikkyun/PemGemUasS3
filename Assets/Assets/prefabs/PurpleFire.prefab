@@ -185,6 +185,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   rb: {fileID: 2527130141735989558}
-  damageFirePurple: 100
+  damageFirePurple: 150
   impactEffect: {fileID: 839438188759881474, guid: d13c5fbec7cca9246b3533786649a551, type: 3}
   playerTag: Player
